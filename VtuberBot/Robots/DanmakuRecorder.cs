@@ -1,0 +1,109 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using OfflineServer.Lib.Tools;
+using VtuberBot.Database;
+using VtuberBot.Network.BiliBili.Live;
+
+namespace VtuberBot.Robots
+{
+    public class DanmakuRecorder
+    {
+        public long RoomId { get;  }
+
+        public LiveClient Client { get; private set; }
+
+        public bool StillLive { get; set; }
+
+        public string LiveId { get; set; }
+
+        public event Action<DanmakuRecorder> LiveStoppedEvent;
+
+        private readonly IMongoCollection<BiliBiliCommentInfo> _danmakuCollection;
+
+
+
+        public DanmakuRecorder(long roomId,string liveId)
+        {
+            RoomId = roomId;
+            LiveId = liveId;
+            _danmakuCollection = Program.Database.GetCollection<BiliBiliCommentInfo>("bili-live-comments");
+        }
+
+        public void StartRecord()
+        {
+            var num = 0;
+            Client = new LiveClient(RoomId);
+            if (!Client.ConnectAsync().GetAwaiter().GetResult())
+            {
+                LogHelper.Error("Cannot connect to danmaku server.");
+                return;
+            }
+
+            StillLive = true;
+            Client.GotGiftEvent += GotGiftEvent;
+            Client.GotDanmuEvent += GotDanmakuEvent;
+            Client.SocketDisconnectEvent += client =>
+            {
+                if (StillLive)
+                    client.ConnectAsync().GetAwaiter().GetResult();
+            };
+            Client.LiveStoppedEvent += client =>
+            {
+                StillLive = false;
+                client.CloseConnect();
+                LiveStoppedEvent?.Invoke(this);
+            };
+        }
+
+        private void GotDanmakuEvent(LiveCommentInfo info)
+        {
+            var danmaku = new BiliBiliCommentInfo()
+            {
+                Id = ObjectId.GenerateNewId(DateTime.Now),
+                Type = DanmakuType.Comment,
+                Username = info.Username,
+                Userid = info.Userid,
+                Content = info.Message,
+                IsVip = info.IsVip,
+                IsAdmin = info.IsAdmin,
+                LiveId = LiveId
+            };
+            try
+            {
+                _danmakuCollection.InsertOne(danmaku);
+            }
+            catch(MongoBulkWriteException)
+            {
+                //
+            }
+        }
+
+        private void GotGiftEvent(LiveGiftInfo info)
+        {
+            var danmaku = new BiliBiliCommentInfo()
+            {
+                Id = ObjectId.GenerateNewId(DateTime.Now),
+                Type = DanmakuType.Gift,
+                Username = info.Username,
+                Userid = info.Userid,
+                GiftName = info.GiftName,
+                GiftCount = info.Count,
+                CostType = info.CoinType,
+                Cost = info.CostCoin,
+                LiveId = LiveId
+            };
+            try
+            {
+                _danmakuCollection.InsertOne(danmaku);
+            }
+            catch (MongoBulkWriteException)
+            {
+                //
+            }
+        }
+    }
+}
