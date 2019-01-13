@@ -204,10 +204,10 @@ namespace VtuberBot.Database
                     var live = YoutubeApi.GetVideosByChannelId(vtuber.YoutubeChannelId).FirstOrDefault(v => v.IsLive);
                     if (live == null)
                     {
-                        var liveId = YoutubeApi.GetFirstVideoId(vtuber.YoutubeChannelId);
+                        var liveId = YoutubeApi.GetLiveVideoId(vtuber.YoutubeChannelId);
                         if (liveId == null)
                         {
-                            LogHelper.Error("Error: liveId is null");
+                            LogHelper.Error("Error: liveId is null", false);
                             continue;
                         }
                         live = YoutubeApi.GetYoutubeVideo(liveId);

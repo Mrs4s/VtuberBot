@@ -57,6 +57,16 @@ namespace VtuberBot.Network.Youtube
             return node.Attributes.FirstOrDefault(v=>v.Name=="href")?.Value.Split('=').Last();
         }
 
+        public static string GetLiveVideoId(string channelId)
+        {
+            var html= new MyHttpClient().Get($"https://www.youtube.com/channel/{channelId}/featured", string.Empty);
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
+            var node = doc.DocumentNode.SelectSingleNode(
+                "//*[@id=\"browse-items-primary\"]/li[1]/div/div/div/ul/li/div[1]/div[2]/h3/a");
+            return node?.Attributes.FirstOrDefault(v => v.Name == "href")?.Value.Split('=').Last();
+        }
+
         public static string GetUploadsPlaylistId(string channelId)
         {
             var client = new MyHttpClient();
@@ -91,7 +101,7 @@ namespace VtuberBot.Network.Youtube
 
         public static bool NowLive(string channelId)
         {
-            var html = new MyHttpClient().Get($"https://www.youtube.com/channel/{channelId}/videos?pbj=1", string.Empty);
+            var html = new MyHttpClient().Get($"https://www.youtube.com/channel/{channelId}/featured", string.Empty);
             return html.Contains("Live now") || html.Contains("Live ngayon");
         }
 

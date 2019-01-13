@@ -97,10 +97,19 @@ namespace VtuberBot.Network.BiliBili.Live
 
         public void CloseConnect()
         {
-            if (WebSocket.State == WebSocketState.Open)
+            try
             {
-                WebSocket.CloseAsync(WebSocketCloseStatus.Empty, null, CancellationToken.None).GetAwaiter().GetResult();
+                if (WebSocket.State == WebSocketState.Open)
+                {
+                    WebSocket.CloseAsync(WebSocketCloseStatus.Empty, null, CancellationToken.None).GetAwaiter()
+                        .GetResult();
+                }
             }
+            catch
+            {
+                //
+            }
+
         }
 
         private void BeginProcessPacket()

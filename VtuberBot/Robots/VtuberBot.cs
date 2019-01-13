@@ -161,7 +161,7 @@ namespace VtuberBot.Robots
                         EndTime = DateTime.Now,
                         MaxPopularity = recorder.Client.MaxPopularity
                     };
-                    _biliLiveCollection.InsertOne(liveInfo);
+                    _biliLiveCollection.UpdateOne(v => v.LiveId == liveId, "{$set:" + liveInfo + "}");
                 };
             };
 
