@@ -86,14 +86,13 @@ namespace VtuberBot.Network.BiliBili.Live
                     SocketDisconnectEvent?.Invoke(this);
                 }).Start();
                 BeginProcessPacket();
+                return true;
             }
             catch (Exception ex)
             {
                 LogHelper.Error($"Connect to danmu server {DanmuServer} error.", true, ex);
                 return false;
             }
-
-            return false;
         }
 
         public void CloseConnect()
@@ -180,7 +179,7 @@ namespace VtuberBot.Network.BiliBili.Live
                     LiveStoppedEvent?.Invoke(this);
                     break;
                 default:
-                    Console.WriteLine(json.ToString(Formatting.Indented));
+                    //Console.WriteLine(json.ToString(Formatting.Indented));
                     break;
             }
         }

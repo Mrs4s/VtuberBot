@@ -4,9 +4,9 @@ using System.Text;
 using System.Threading;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using OfflineServer.Lib.Tools;
 using VtuberBot.Database;
 using VtuberBot.Network.BiliBili.Live;
+using VtuberBot.Tools;
 
 namespace VtuberBot.Robots
 {
@@ -76,9 +76,9 @@ namespace VtuberBot.Robots
             {
                 _danmakuCollection.InsertOne(danmaku);
             }
-            catch(MongoBulkWriteException)
+            catch(MongoBulkWriteException ex)
             {
-                //
+                LogHelper.Error("Insert object error.", true, ex);
             }
         }
 
@@ -100,9 +100,9 @@ namespace VtuberBot.Robots
             {
                 _danmakuCollection.InsertOne(danmaku);
             }
-            catch (MongoBulkWriteException)
+            catch (MongoBulkWriteException ex)
             {
-                //
+                LogHelper.Error("Insert object error.", true, ex);
             }
         }
     }

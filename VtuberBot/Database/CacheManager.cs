@@ -231,7 +231,7 @@ namespace VtuberBot.Database
                 if (bUser != null)
                 {
                     if (!LastCheckLiveBStatus.ContainsKey(vtuber))
-                        LastCheckLiveBStatus.Add(vtuber, bUser);
+                        LastCheckLiveBStatus.Add(vtuber, new BiliBiliUser());
                     if (!LastCheckLiveBStatus[vtuber].AreLive && bUser.AreLive)
                         VtuberBeginLiveBilibiliEvent?.Invoke(vtuber, bUser);
                     LastCheckLiveBStatus[vtuber] = bUser;

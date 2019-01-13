@@ -31,16 +31,16 @@ namespace VtuberBot.Network.BiliBili
         public bool IsUploader { get; set; }
 
         [JsonIgnore]
-        public bool AreLive => _liveInfo["liveStatus"]?.ToObject<int>() == 1;
+        public bool AreLive => _liveInfo?["liveStatus"].ToObject<int>() == 1;
 
         [JsonIgnore]
-        public string LiveUrl => _liveInfo["url"].ToObject<string>();
+        public string LiveUrl => _liveInfo?["url"].ToObject<string>();
 
         [JsonIgnore]
-        public string LiveTitle => _liveInfo["title"].ToObject<string>();
+        public string LiveTitle => _liveInfo?["title"].ToObject<string>();
 
         [JsonIgnore]
-        public long LiveRoomId => _liveInfo["roomid"].ToObject<long>();
+        public long LiveRoomId => _liveInfo?["roomid"].ToObject<long>() ?? 0;
 
         [JsonProperty("live")]
         private JToken _liveInfo;
