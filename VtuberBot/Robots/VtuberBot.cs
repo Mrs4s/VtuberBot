@@ -47,7 +47,6 @@ namespace VtuberBot.Robots
                                                   $"实际开播时间:  {info.LiveDetails.ActualStartTime.ToUniversalTime().AddHours(8):yyyy-MM-dd HH:mm:ss}");
                 }
 
-
                 var recorder = new LiveChatRecorder(info.LiveDetails.LiveChatId, vtuber,video.VideoId);
                 recorder.StartRecord();
                 recorder.LiveStoppedEvent += (id, recder) =>
@@ -135,12 +134,26 @@ namespace VtuberBot.Robots
                 }
 
                 var liveId = StringTools.RandomString;
-                var recorder = new DanmakuRecorder(bUser.LiveRoomId, liveId);
+                var liveInfo = new BiliBiliLiveInfo()
+                {
+                    LiveId = liveId,
+                    Title = bUser.LiveTitle,
+                    BeginTime = beginTime,
+                    EndTime = beginTime,
+                    MaxPopularity = 0
+                };
+                var live = _biliLiveCollection.FindAsync(v => v.MaxPopularity == 0 && v.Title == bUser.LiveTitle)
+                    .GetAwaiter().GetResult().FirstOrDefault();
+                if (live != null)
+                    liveId = live.LiveId;
+                else
+                    _biliLiveCollection.InsertOne(liveInfo);
+                var recorder = new DanmakuRecorder(bUser.LiveRoomId, liveId, vtuber);
                 recorder.StartRecord();
                 recorder.LiveStoppedEvent += info =>
                 {
                     LogHelper.Info($"{vtuber.OriginalName} 已停止在B站的直播.");
-                    var liveInfo = new BiliBiliLiveInfo()
+                    liveInfo = new BiliBiliLiveInfo()
                     {
                         LiveId = liveId,
                         Title = bUser.LiveTitle,

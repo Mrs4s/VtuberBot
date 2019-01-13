@@ -20,16 +20,19 @@ namespace VtuberBot.Robots
 
         public string LiveId { get; set; }
 
+        public VtuberInfo Vtuber { get; }
+
         public event Action<DanmakuRecorder> LiveStoppedEvent;
 
         private readonly IMongoCollection<BiliBiliCommentInfo> _danmakuCollection;
 
 
 
-        public DanmakuRecorder(long roomId,string liveId)
+        public DanmakuRecorder(long roomId,string liveId,VtuberInfo vtuber)
         {
             RoomId = roomId;
             LiveId = liveId;
+            Vtuber = vtuber;
             _danmakuCollection = Program.Database.GetCollection<BiliBiliCommentInfo>("bili-live-comments");
         }
 
@@ -57,6 +60,20 @@ namespace VtuberBot.Robots
                 client.CloseConnect();
                 LiveStoppedEvent?.Invoke(this);
             };
+            new Thread(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10000);
+                    if (!CacheManager.Manager.LastCheckLiveBStatus[Vtuber].AreLive)
+                    {
+                        StillLive = false;
+                        Client.CloseConnect();
+                        LiveStoppedEvent?.Invoke(this);
+                        break;
+                    }
+                }
+            }).Start();
         }
 
         private void GotDanmakuEvent(LiveCommentInfo info)
