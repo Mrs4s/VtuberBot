@@ -184,9 +184,6 @@ namespace VtuberBot.Network.BiliBili.Live
                     };
                     GotDanmuEvent?.Invoke(info);
                     break;
-                case "PREPARING":
-                    LiveStoppedEvent?.Invoke(this);
-                    break;
                 default:
                     //Console.WriteLine(json.ToString(Formatting.Indented));
                     break;

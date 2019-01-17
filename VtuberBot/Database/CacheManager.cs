@@ -43,7 +43,7 @@ namespace VtuberBot.Database
                         LogHelper.Error("ERROR", true, ex);
                     }
 
-                    Thread.Sleep(1000 * 60);
+                    Thread.Sleep(1000 * 120);
                 }
             }).Start();
             new Thread(() =>
@@ -236,6 +236,14 @@ namespace VtuberBot.Database
                         VtuberBeginLiveBilibiliEvent?.Invoke(vtuber, bUser);
                     LastCheckLiveBStatus[vtuber] = bUser;
                 }
+            }
+        }
+
+        private void BilibiliVideoCheckTimer()
+        {
+            foreach (var vtuber in Config.DefaultConfig.Vtubers.Where(v => v.BilibiliUserId != default(long)))
+            {
+
             }
         }
 

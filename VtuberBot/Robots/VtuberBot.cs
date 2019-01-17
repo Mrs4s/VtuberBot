@@ -10,6 +10,8 @@ using QQ.Framework.Domains;
 using QQ.Framework.HttpEntity;
 using QQ.Framework.Utils;
 using VtuberBot.Database;
+using VtuberBot.Database.Entities;
+using VtuberBot.Network.Twitter;
 using VtuberBot.Network.Youtube;
 using VtuberBot.Tools;
 using StringTools = OfflineServer.Lib.Tools.StringTools;
@@ -26,12 +28,14 @@ namespace VtuberBot.Robots
         private DateTime _lastTime;
         private readonly IMongoCollection<YoutubeLiveInfo> _youtubeLiveCollection;
         private readonly IMongoCollection<BiliBiliLiveInfo> _biliLiveCollection;
+        private readonly IMongoCollection<TweetInfo> _tweetCollection;
 
 
         public VtuberBot(ISendMessageService service, IServerMessageSubject transponder, QQUser user) : base(service, transponder, user)
         {
             _youtubeLiveCollection = Program.Database.GetCollection<YoutubeLiveInfo>("youtube-live-details");
             _biliLiveCollection = Program.Database.GetCollection<BiliBiliLiveInfo>("bili-live-details");
+            _tweetCollection = Program.Database.GetCollection<TweetInfo>("tweet-details");
             CacheManager.Manager.VtuberBeginLiveEvent += (vtuber, video) =>
             {
                 var info = YoutubeApi.GetYoutubeVideo(video.VideoId);
@@ -92,6 +96,15 @@ namespace VtuberBot.Robots
                         _service.SendToGroup(key, $"{vtuber.OriginalName} 在 {tweet.CreateTime.ToUniversalTime().AddHours(8):yyyy-MM-dd HH:mm:ss} 发布了:\r\n" +
                                                        $"{(tweet.Content.Length > 255 ? tweet.Content.Substring(0, 255) : tweet.Content)}");
                 }
+
+                try
+                {
+                    _tweetCollection.InsertOne(tweet);
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.Error("Insert object error", true, ex);
+                }
             };
 
             CacheManager.Manager.VtuberReplyTweetEvent += (vtuber, tweet) =>
@@ -105,6 +118,14 @@ namespace VtuberBot.Robots
                         _service.SendToGroup(key, $"{vtuber.OriginalName} 在 {tweet.CreateTime.ToUniversalTime().AddHours(8):yyyy-MM-dd HH:mm:ss} 回复了 {tweet.RetweetedTweet}:\r\n" +
                                                   $"{(tweet.Content.Length > 255 ? tweet.Content.Substring(0, 255) : tweet.Content)}");
                 }
+                try
+                {
+                    _tweetCollection.InsertOne(tweet);
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.Error("Insert object error", true, ex);
+                }
             };
 
             CacheManager.Manager.VtuberRetweetedEvent += (vtuber, tweet) =>
@@ -117,6 +138,14 @@ namespace VtuberBot.Robots
                     if (config?.Retweeted ?? false)
                         _service.SendToGroup(key, $"{vtuber.OriginalName} 在 {tweet.CreateTime.ToUniversalTime().AddHours(8):yyyy-MM-dd HH:mm:ss} 转发了 {tweet.RetweetedTweet.User.Name} 的推:\r\n" +
                                                   $"{(tweet.Content.Length > 255 ? tweet.Content.Substring(0, 255) : tweet.Content)}");
+                }
+                try
+                {
+                    _tweetCollection.InsertOne(tweet);
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.Error("Insert object error", true, ex);
                 }
             };
 
@@ -246,6 +275,8 @@ namespace VtuberBot.Robots
         public abstract string[] Names { get; }
 
         protected ISendMessageService _service;
+        protected Action NextPageAction;
+
 
         protected RobotCommandBase(ISendMessageService service)
         {
@@ -301,6 +332,18 @@ namespace VtuberBot.Robots
             if (!handled)
                 ShowHelpMessage(message, args);
         }
+
+        [RobotCommand(processLength:2,offset:1,subCommandName:"下一页")]
+        public void NextPageCommand(MessageInfo message,string[] args)
+        {
+            if (NextPageAction == null)
+            { 
+                _service.SendToGroup(message.GroupNumber,"已经到底了~");
+                return;
+            }
+            NextPageAction();
+        }
+
 
         public abstract void ShowHelpMessage(MessageInfo message, string[] args);
     }

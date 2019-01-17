@@ -4,7 +4,7 @@ using System.Text;
 using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
 
-namespace VtuberBot.Database
+namespace VtuberBot.Database.Entities
 {
     public class BiliBiliLiveInfo
     {

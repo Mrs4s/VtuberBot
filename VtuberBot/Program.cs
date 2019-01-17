@@ -50,7 +50,7 @@ namespace VtuberBot
             LogHelper.Info("登录完成");
             LogHelper.Info("载入缓存中");
             CacheManager.Manager.Init();
-            Thread.Sleep(1000);
+            Thread.Sleep(10000);
             LogHelper.Info("载入完成");
             Bot = new Robots.VtuberBot(sendService, transponder, User);
             Bot.Commands.Add(new MenuCommand());

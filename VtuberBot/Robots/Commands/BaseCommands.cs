@@ -53,7 +53,9 @@ namespace VtuberBot.Robots.Commands
                                                      "\r\n!Vtuber list          -查看数据库中的Vtuber列表" +
                                                      "\r\n!Vtuber <Vtuber名称>  -查看Vtuber详细信息" +
                                                      "\r\n!Vtuber add <Vtuber日文名> -使用互联网数据添加Vtuber" +
-                                                     "\r\n!Vtuber 设置中文名 <Vtuber原名> <中文名>  -设置中文名");
+                                                     "\r\n!Vtuber 设置中文名 <Vtuber原名> <中文名>  -设置中文名" +
+                                                     "\r\n!Vtuber 添加昵称 <Vtuber> <昵称>  -添加昵称" +
+                                                     "\r\n!Vtuber 删除昵称 <Vtuber> <昵称>  -删除昵称");
         }
 
         [RobotCommand(processLength: 2)]
@@ -75,8 +77,28 @@ namespace VtuberBot.Robots.Commands
         }
 
         [RobotCommand(processLength: 2, offset: 1, subCommandName: "list")]
-        public void VtuberListCommand(MessageInfo message, string[] args) => _service.SendToGroup(message.GroupNumber,
-            $"当前数据库中的Vtuber名单:\r\n{string.Join(',', Config.DefaultConfig.Vtubers.Select(v => v.OriginalName))}");
+        public void VtuberListCommand(MessageInfo message, string[] args)
+        {
+            var list = Config.DefaultConfig.Vtubers.Select(v => v.OriginalName).ToList();
+            if (list.Count <= 10)
+            {
+                _service.SendToGroup(message.GroupNumber,
+                    $"当前数据库中的Vtuber名单:\r\n{string.Join(',', list)}");
+                return;
+            }
+
+            var page = 1;
+            _service.SendToGroup(message.GroupNumber,
+                $"当前数据库中的Vtuber名单 ({page}/{list.Count / 20 + 1}): \r\n{string.Join(',', list.Take(20))}");
+            _service.SendToGroup(message.GroupNumber,"可使用!Vtuber 下一页 来翻页");
+            NextPageAction = () =>
+            {
+                page++;
+                _service.SendToGroup(message.GroupNumber,
+                    $"当前数据库中的Vtuber名单 ({page}/{list.Count / 20 + 1}): \r\n{string.Join(',', list.Skip(page * 20).ToList().Take(20))}");
+            };
+
+        }
 
         [RobotCommand(offset: 1, subCommandName: "set")]
         public void SetVtuberCommand(MessageInfo message, string[] args)
@@ -214,7 +236,7 @@ namespace VtuberBot.Robots.Commands
             _service.SendToGroup(message.GroupNumber, "已设置");
             var bUsers = BiliBiliApi.SearchBiliBiliUsers(vtb.ChineseName);
             var uploader = bUsers.OrderByDescending(v => v.Follower).FirstOrDefault(v => v.IsUploader);
-            if (uploader != null)
+            if (uploader != null && string.IsNullOrEmpty(vtb.ChineseName))
             {
                 vtb.BilibiliUserId = uploader.Id;
                 Config.SaveToDefaultFile(Config.DefaultConfig);
@@ -224,6 +246,46 @@ namespace VtuberBot.Robots.Commands
                                                          $"\r\n粉丝数: {uploader.Follower}");
                 _service.SendToGroup(message.GroupNumber, "可使用!Vtuber 设置B站 <Vtuber名字> <B站空间ID> 来修改");
             }
+        }
+
+        [RobotCommand(processLength: 4, offset: 1, subCommandName: "添加昵称")]
+        public void SetNicknameCommand(MessageInfo message, string[] args)
+        {
+            var vtuber = Config.DefaultConfig.GetVtuber(args[2]);
+            if (vtuber == null)
+            {
+                _service.SendToGroup(message.GroupNumber, "未找到Vtuber");
+                return;
+            }
+
+            if (vtuber.NickNames.Any(v => v.EqualsIgnoreCase(args[3])))
+            {
+                _service.SendToGroup(message.GroupNumber, "已存在该昵称");
+                return;
+            }
+            vtuber.NickNames.Add(args[3]);
+            Config.SaveToDefaultFile(Config.DefaultConfig);
+            _service.SendToGroup(message.GroupNumber, "添加完成");
+        }
+
+        [RobotCommand(processLength: 4, offset: 1, subCommandName: "删除昵称")]
+        public void RemoveNicknameCommand(MessageInfo message, string[] args)
+        {
+            var vtuber = Config.DefaultConfig.GetVtuber(args[2]);
+            if (vtuber == null)
+            {
+                _service.SendToGroup(message.GroupNumber, "未找到Vtuber");
+                return;
+            }
+
+            if (vtuber.NickNames.All(v => !v.EqualsIgnoreCase(args[3])))
+            {
+                _service.SendToGroup(message.GroupNumber, "未存在该昵称");
+                return;
+            }
+            vtuber.NickNames.RemoveAll(v=>v.EqualsIgnoreCase(args[3]));
+            Config.SaveToDefaultFile(Config.DefaultConfig);
+            _service.SendToGroup(message.GroupNumber, "删除完成");
         }
 
         [RobotCommand(processLength: 4, offset: 1, subCommandName: "设置B站")]
@@ -310,7 +372,7 @@ namespace VtuberBot.Robots.Commands
                                                         $"推特转推: {config.Retweeted}\r\n" +
                                                         $"推特回推: {config.ReplyTweet}\r\n" +
                                                         $"油管上传: {config.UploadVideo}\r\n" +
-                                                        $"油管开播: {config.BeginLive}\r\n+" +
+                                                        $"油管开播: {config.BeginLive}\r\n" +
                                                         $"B站开播: {config.BilibiliBeginLive}");
                 return;
             }
@@ -337,7 +399,7 @@ namespace VtuberBot.Robots.Commands
                     case "b站开播":
                         if (vtuber.BilibiliUserId == default(long))
                         {
-                            service.SendToGroup(message.GroupNumber,"该Vtuber未绑定B站搬运，请使用!Vtuber 设置中文名 来绑定");
+                            service.SendToGroup(message.GroupNumber, "该Vtuber未绑定B站搬运，请使用!Vtuber 设置中文名 来绑定");
                             return;
                         }
 

@@ -5,6 +5,7 @@ using System.Threading;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using VtuberBot.Database;
+using VtuberBot.Database.Entities;
 using VtuberBot.Network.BiliBili.Live;
 using VtuberBot.Tools;
 
