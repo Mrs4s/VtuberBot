@@ -236,7 +236,7 @@ namespace VtuberBot.Robots.Commands
             _service.SendToGroup(message.GroupNumber, "已设置");
             var bUsers = BiliBiliApi.SearchBiliBiliUsers(vtb.ChineseName);
             var uploader = bUsers.OrderByDescending(v => v.Follower).FirstOrDefault(v => v.IsUploader);
-            if (uploader != null && string.IsNullOrEmpty(vtb.ChineseName))
+            if (uploader != null && vtb.BilibiliUserId==0)
             {
                 vtb.BilibiliUserId = uploader.Id;
                 Config.SaveToDefaultFile(Config.DefaultConfig);

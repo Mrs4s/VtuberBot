@@ -24,10 +24,10 @@ namespace VtuberBot.Robots
         private readonly IMongoCollection<YoutubeLiveChat> _chatCollection;
 
 
-        public event Action<string, LiveChatRecorder> LiveStoppedEvent; 
+        public event Action<string, LiveChatRecorder> LiveStoppedEvent;
 
 
-        public LiveChatRecorder(string liveChatId, VtuberInfo vtuber , string videoId)
+        public LiveChatRecorder(string liveChatId, VtuberInfo vtuber, string videoId)
         {
             LiveChatId = liveChatId;
             Vtuber = vtuber;
@@ -54,7 +54,7 @@ namespace VtuberBot.Robots
                         comments.ForEach(v => v.VideoId = VideoId);
                         try
                         {
-                            _chatCollection.InsertMany(comments,new InsertManyOptions()
+                            _chatCollection.InsertMany(comments, new InsertManyOptions()
                             {
                                 IsOrdered = false
                             });

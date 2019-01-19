@@ -6,6 +6,7 @@ using MongoDB.Driver;
 using QQ.Framework.Domains;
 using QQ.Framework.Utils;
 using VtuberBot.Database;
+using VtuberBot.Database.Entities;
 using VtuberBot.Network.Youtube;
 using VtuberBot.Tools;
 
@@ -175,6 +176,43 @@ namespace VtuberBot.Robots.Commands
                       $"\r\n最多复读的词: {dic.First(v => v.Value == dic.Max(d => d.Value)).Key} (复读 {dic.Max(v => v.Value)} 次)" +
                       $"\r\n疑似大陆天狗评论数: {count} (估算)";
             _service.SendToGroup(message.GroupNumber, msg);
+        }
+    }
+    public class BilibiliLiveCommand : RobotCommandBase
+    {
+
+        public override string[] Names { get; } = { "!blive", "！blive", "!b站直播", "！b站直播" };
+
+        private IMongoCollection<BiliBiliLiveInfo> _liveCollection;
+
+        public BilibiliLiveCommand(ISendMessageService service) : base(service)
+        {
+            _liveCollection = Program.Database.GetCollection<BiliBiliLiveInfo>("bili-live-details");
+        }
+
+
+
+
+
+
+        [RobotCommand(offset: 1, subCommandName: "历史")]
+        public void HistoryCommand(MessageInfo message, string[] args)
+        {
+            var vtuber = Config.DefaultConfig.GetVtuber(args[2]);
+            if (vtuber == null)
+            {
+                _service.SendToGroup(message.GroupNumber, "数据库中不存在" + args[2]);
+                return;
+            }
+
+        }
+
+
+
+
+        public override void ShowHelpMessage(MessageInfo message, string[] args)
+        {
+            throw new NotImplementedException();
         }
     }
 }

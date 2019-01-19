@@ -249,7 +249,7 @@ namespace VtuberBot.Database
 
         public void UserlocalUpdateTimer()
         {
-            LastCheckTimeline = UserLocalApi.GetTimeLine();
+            //LastCheckTimeline = UserLocalApi.GetTimeLine();
         }
     }
 }

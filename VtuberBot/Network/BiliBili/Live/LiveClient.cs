@@ -120,7 +120,7 @@ namespace VtuberBot.Network.BiliBili.Live
                 {
                     try
                     {
-                        var buffer = new byte[10240];
+                        var buffer = new byte[40960];  //Fucking kimo风暴
                         var result = await WebSocket.ReceiveAsync(buffer, CancellationToken.None);
                         var bytes = new byte[result.Count];
                         Array.Copy(buffer, bytes, result.Count);

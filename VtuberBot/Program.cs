@@ -17,6 +17,7 @@ using VtuberBot.Network.BiliBili;
 using VtuberBot.Network.BiliBili.Live;
 using VtuberBot.Network.Hiyoko;
 using VtuberBot.Network.Twitter;
+using VtuberBot.Network.UserLocal;
 using VtuberBot.Network.Youtube;
 using VtuberBot.Robots;
 using VtuberBot.Robots.Commands;

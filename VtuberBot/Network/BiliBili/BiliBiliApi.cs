@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using OfflineServer.Lib.Network;
@@ -34,6 +35,21 @@ namespace VtuberBot.Network.BiliBili
                 return users.ToList();
             }
             return new List<BiliBiliUser>();
+        }
+
+        public static List<BiliBiliDynamic> GetDynamicsByUser(long userId)
+        {
+            using (var client = new HttpClient())
+            {
+                var json = JObject.Parse(
+                    client.GetStringAsync(
+                            "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid=" + userId)
+                        .GetAwaiter().GetResult());
+                if (json.Value<int>("code") != 0)
+                    return new List<BiliBiliDynamic>();
+                return json["data"]["cards"].ToArray().Select(v => v.ToObject<BiliBiliDynamic>()).ToList();
+            }
+
         }
 
 

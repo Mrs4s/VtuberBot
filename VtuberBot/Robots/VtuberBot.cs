@@ -56,7 +56,6 @@ namespace VtuberBot.Robots
                 recorder.LiveStoppedEvent += (id, recder) =>
                 {
                     LogHelper.Info($"{vtuber.OriginalName} 已停止直播, 正在保存评论数据...");
-                    CommentDatabase.SaveLiveChatComments(info.ChannelId, info.VideoId, recorder.RecordedComments);
                     info = YoutubeApi.GetYoutubeVideo(video.VideoId) ?? info;
                     var live = new YoutubeLiveInfo()
                     {
@@ -66,8 +65,8 @@ namespace VtuberBot.Robots
                         EndTime = info.LiveDetails?.ActualEndTime ?? DateTime.Now,
                         VideoId = video.VideoId
                     };
-                    CommentDatabase.AddChannelLiveInfo(live);
-                    _youtubeLiveCollection.InsertOne(live);
+                    _youtubeLiveCollection.ReplaceOne(v => v.VideoId == live.VideoId, live,
+                        new UpdateOptions() {IsUpsert = true});
                     LogHelper.Info("保存完毕");
                 };
             };
@@ -190,7 +189,8 @@ namespace VtuberBot.Robots
                         EndTime = DateTime.Now,
                         MaxPopularity = recorder.Client.MaxPopularity
                     };
-                    _biliLiveCollection.UpdateOne(v => v.LiveId == liveId, "{$set:" + liveInfo + "}");
+                    _biliLiveCollection.ReplaceOne(v => v.LiveId == liveInfo.LiveId, liveInfo,
+                        new UpdateOptions() {IsUpsert = true});
                 };
             };
 
