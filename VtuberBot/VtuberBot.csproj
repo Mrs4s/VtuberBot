@@ -12,12 +12,16 @@
     <Reference Include="QQ.Framework">
       <HintPath>..\..\PCQQ-Protocol--New\QQ.Framework\bin\Debug\QQ.Framework.dll</HintPath>
     </Reference>
+    <Reference Include="System.Drawing.Common">
+      <HintPath>..\..\PCQQ-Protocol--New\QQ.Framework\bin\Debug\System.Drawing.Common.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.8.11" />
     <PackageReference Include="MongoDB.Driver" Version="2.7.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="System.Drawing.Common" Version="4.5.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="4.5.0" />
   </ItemGroup>
 

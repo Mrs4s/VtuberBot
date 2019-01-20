@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -12,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using QQ.Framework;
 using QQ.Framework.Domains;
 using QQ.Framework.Sockets;
+using QQ.Framework.Utils;
 using VtuberBot.Database;
 using VtuberBot.Network.BiliBili;
 using VtuberBot.Network.BiliBili.Live;
@@ -19,19 +21,22 @@ using VtuberBot.Network.Hiyoko;
 using VtuberBot.Network.Twitter;
 using VtuberBot.Network.UserLocal;
 using VtuberBot.Network.Youtube;
+using VtuberBot.Plugin;
 using VtuberBot.Robots;
 using VtuberBot.Robots.Commands;
 using VtuberBot.Tools;
 
 namespace VtuberBot
 {
-    class Program
+    public class Program
     {
         public static Robots.VtuberBot Bot { get; private set; }
 
         public static QQUser User { get; private set; }
 
         public static IMongoDatabase Database;
+
+        public static SendMessageServiceImpl SendService;
 
 
         static void Main(string[] args)
@@ -42,7 +47,7 @@ namespace VtuberBot
             User = new QQUser(Config.DefaultConfig.Id, Config.DefaultConfig.Password);
             var socketServer = new SocketServiceImpl(User);
             var transponder = new Transponder();
-            var sendService = new SendMessageServiceImpl(socketServer, User);
+            SendService = new SendMessageServiceImpl(socketServer, User);
             var manage = new MessageManage(socketServer, User, transponder);
             manage.Init();
             QQGlobal.DebugLog = false;
@@ -53,14 +58,18 @@ namespace VtuberBot
             CacheManager.Manager.Init();
             Thread.Sleep(10000);
             LogHelper.Info("载入完成");
-            Bot = new Robots.VtuberBot(sendService, transponder, User);
+            Bot = new Robots.VtuberBot(SendService, transponder, User);
             Bot.Commands.Add(new MenuCommand());
             Bot.Commands.Add(new TimeLineCommand());
             Bot.Commands.Add(new OfficeInfoCommand());
             Bot.Commands.Add(new YoutubeSearchCommand());
-            Bot.Commands.Add(new VtuberInfoCommand(sendService));
+            Bot.Commands.Add(new VtuberInfoCommand(SendService));
             Bot.Commands.Add(new SubscribeCommand());
-            Bot.Commands.Add(new LiveCommand(sendService));
+            Bot.Commands.Add(new LiveCommand(SendService));
+            Bot.Commands.Add(new PluginManagerCommand(SendService));
+            LogHelper.Info("载入插件中...");
+            PluginManager.Manager.LoadPlugins();
+            LogHelper.Info("载入完成.");
             Console.ReadLine();
         }
     }
