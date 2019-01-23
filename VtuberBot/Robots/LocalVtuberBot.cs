@@ -18,11 +18,10 @@ using StringTools = OfflineServer.Lib.Tools.StringTools;
 
 namespace VtuberBot.Robots
 {
-    public class VtuberBot : CustomRobot
+    public class LocalVtuberBot : MiddleLayerBot
     {
         public List<IRobotCommand> Commands { get; } = new List<IRobotCommand>();
 
-        public CommentDatabase CommentDatabase { get; } = new CommentDatabase(Path.Combine(Directory.GetCurrentDirectory(), "Comments"));
 
         private long _lastMessage = 0;
         private DateTime _lastTime;
@@ -31,7 +30,7 @@ namespace VtuberBot.Robots
         private readonly IMongoCollection<TweetInfo> _tweetCollection;
 
 
-        public VtuberBot(ISendMessageService service, IServerMessageSubject transponder, QQUser user) : base(service, transponder, user)
+        public LocalVtuberBot(ISendMessageService service, IServerMessageSubject transponder, QQUser user) : base(service, transponder, user)
         {
             _youtubeLiveCollection = Program.Database.GetCollection<YoutubeLiveInfo>("youtube-live-details");
             _biliLiveCollection = Program.Database.GetCollection<BiliBiliLiveInfo>("bili-live-details");
@@ -224,22 +223,34 @@ namespace VtuberBot.Robots
 
         public override void ReceiveGroupMessage(long groupNumber, long fromNumber, Richtext content)
         {
-            if (content == null || content.ToString().Trim() == string.Empty || fromNumber == 0 || _user.Groups == null)
+            if(content == null || content.ToString().Trim() == string.Empty)
                 return;
-            if (_lastMessage == fromNumber && _lastTime != default(DateTime) && (DateTime.Now - _lastTime).Seconds <= 1)
-                return;
-            _lastMessage = fromNumber;
-            _lastTime = DateTime.Now;
-            var groups = new List<GroupItem>();
-            if (_user.Groups.Create != null)
-                groups.AddRange(_user.Groups.Create);
-            if (_user.Groups.Join != null)
-                groups.AddRange(_user.Groups.Join);
-            if (_user.Groups.Manage != null)
-                groups.AddRange(_user.Groups.Manage);
-            var group = groups.FirstOrDefault(v => v.Gc == groupNumber);
-            var member = group?.Members.Mems.FirstOrDefault(v => v.Uin == fromNumber);
-            LogHelper.Info($"收到来自群 [{group?.Gn}({groupNumber})] 的 [{member?.Card}({fromNumber})] 的消息：{content}", Config.DefaultConfig.LogGroupMessage);
+            if (_user != null)
+            {
+                if (fromNumber == 0 || _user.Groups == null)
+                    return;
+                if (_lastMessage == fromNumber && _lastTime != default(DateTime) && (DateTime.Now - _lastTime).Seconds <= 1)
+                    return;
+                _lastMessage = fromNumber;
+                _lastTime = DateTime.Now;
+                var groups = new List<GroupItem>();
+                if (_user.Groups.Create != null)
+                    groups.AddRange(_user.Groups.Create);
+                if (_user.Groups.Join != null)
+                    groups.AddRange(_user.Groups.Join);
+                if (_user.Groups.Manage != null)
+                    groups.AddRange(_user.Groups.Manage);
+                var group = groups.FirstOrDefault(v => v.Gc == groupNumber);
+                LogHelper.Info($"收到来自群 [{group?.Gn}({groupNumber})] 的 [{fromNumber}] 的消息：{content}", Config.DefaultConfig.LogGroupMessage);
+            }
+            else
+            {
+
+                LogHelper.Info(
+                    $"收到来自群 [{groupNumber}] 的 [{GetGroupCard(groupNumber, fromNumber)}({fromNumber})] 的消息：{content}",
+                    Config.DefaultConfig.LogGroupMessage);
+            }
+
             var cmd = Commands.FirstOrDefault(v => v.Names.Any(name => content.ToString().Trim().ToLower().StartsWith(name.ToLower())));
             new Thread(() =>
             {
@@ -249,8 +260,8 @@ namespace VtuberBot.Robots
                     {
                         IsGroupMessage = true,
                         GroupNumber = groupNumber,
-                        GroupInfo = group,
-                        GroupMemberInfo = member,
+                        GroupInfo = null,
+                        GroupMemberInfo = null,
                         UserMember = fromNumber,
                         Content = content.ToString().Trim()
                     });

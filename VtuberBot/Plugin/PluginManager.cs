@@ -66,18 +66,27 @@ namespace VtuberBot.Plugin
 
         public PluginBase LoadPlugin(string dllPath)
         {
-            if (!File.Exists(dllPath))
+            try
+            {
+                if (!File.Exists(dllPath))
+                    return null;
+                var bytes = File.ReadAllBytes(dllPath);
+                var assembly = Assembly.Load(bytes);
+                var pluginMain = assembly.GetExportedTypes().FirstOrDefault(v => v.BaseType == typeof(PluginBase));
+                if (pluginMain == null)
+                    return null;
+                var plugin = Activator.CreateInstance(pluginMain) as PluginBase;
+                plugin.OnLoad();
+                plugin.DllPath = dllPath;
+                Plugins.Add(plugin);
+                return plugin;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.Error("Cannot load plugin " + dllPath, true, ex);
                 return null;
-            var bytes = File.ReadAllBytes(dllPath);
-            var assembly = Assembly.Load(bytes);
-            var pluginMain = assembly.GetExportedTypes().FirstOrDefault(v => v.BaseType == typeof(PluginBase));
-            if (pluginMain == null)
-                return null;
-            var plugin = Activator.CreateInstance(pluginMain) as PluginBase;
-            plugin.OnLoad();
-            plugin.DllPath = dllPath;
-            Plugins.Add(plugin);
-            return plugin;
+            }
+
         }
     }
 }

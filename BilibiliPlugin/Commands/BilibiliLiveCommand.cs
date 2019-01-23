@@ -35,9 +35,13 @@ namespace BilibiliPlugin.Commands
         }
         public override void ShowHelpMessage(MessageInfo message, string[] args)
         {
-            _service.SendToGroup(message.GroupNumber,"B站直播帮助:" +
-                                                     "\r\n!B站直播 历史 <Vtuber>  -查询B站直播历史" +
-                                                     "\r\n!B站直播 历史 <Vtuber> <序号>  -查询直播详情");
+            _service.SendToGroup(message.GroupNumber, new Richtext()
+            {
+                Snippets = new List<TextSnippet>()
+                {
+                    new TextSnippet(@"I:\UserFolder\Pictures\QQ图片20181006210105.jpg", MessageType.Picture)
+                }
+            });
         }
     }
 }

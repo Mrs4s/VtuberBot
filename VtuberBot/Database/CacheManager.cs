@@ -198,7 +198,7 @@ namespace VtuberBot.Database
             {
                 if (!LastCheckLiveStatus.ContainsKey(vtuber))
                     LastCheckLiveStatus.Add(vtuber, new YoutubeVideo());
-                var nowLive = YoutubeApi.NowLive(vtuber.YoutubeChannelId);
+                var nowLive = YoutubeApi.NowLive(vtuber.YoutubeChannelId);;
                 if (nowLive && !LastCheckLiveStatus[vtuber].IsLive)
                 {
                     var live = YoutubeApi.GetVideosByChannelId(vtuber.YoutubeChannelId).FirstOrDefault(v => v.IsLive);

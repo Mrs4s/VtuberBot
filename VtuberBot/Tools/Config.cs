@@ -16,6 +16,19 @@ namespace VtuberBot.Tools
 
         private static Config _defaultConfig;
 
+        /// <summary>
+        /// 是否使用本地QQ客户端
+        /// </summary>
+        public bool UseLocalClient { get; set; } = false;
+
+        public string CoolQApi { get; set; } = "http://localhost:5700/";
+
+        public string CoolQAccessToken { get; set; } = "Your access token";
+
+        public string CoolQListenUrl { get; set; } = "http://+:8888/";
+
+        public string ProxyUrl { get; set; }
+
         public long Id { get; set; }
 
         public string Password { get; set; }
@@ -31,6 +44,7 @@ namespace VtuberBot.Tools
         public string YoutubeDataApiKey { get; set; }
 
         public string TwitterApiKey { get; set; }
+
 
 
         public VtuberInfo GetVtuber(string nameOrNickName)
