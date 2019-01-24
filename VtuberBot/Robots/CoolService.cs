@@ -7,6 +7,7 @@ using QQ.Framework.Domains;
 using QQ.Framework.Domains.Observers;
 using QQ.Framework.Utils;
 using Sisters.WudiLib;
+using VtuberBot.Tools;
 
 namespace VtuberBot.Robots
 {
@@ -32,7 +33,7 @@ namespace VtuberBot.Robots
                 return;
             }
 
-            Program.Client.SendGroupMessageAsync(groupNumber, content).GetAwaiter().GetResult();
+            Program.Client.SendGroupMessageLimitedAsync(groupNumber, content).GetAwaiter().GetResult();
         }
 
         public void ReceiveFriendMessage(long friendNumber, Richtext content)

@@ -19,6 +19,7 @@ namespace VtuberBot.Robots
 
         protected MiddleLayerBot(ISendMessageService service, IServerMessageSubject transponder, QQUser user) : base(service, transponder, user)
         {
+            
             if (!Config.DefaultConfig.UseLocalClient)
             {
                 Program.Listener.MessageEvent += (api, message) =>
@@ -51,6 +52,12 @@ namespace VtuberBot.Robots
             }
             
             return null;
+        }
+
+        protected string GetGroupName(long groupId)
+        {
+            var groups = Program.Client.GetGroupList();
+            return groups.FirstOrDefault(v => v.Gc == groupId)?.Gn;
         }
 
         

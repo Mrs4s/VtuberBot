@@ -45,6 +45,23 @@ namespace VtuberBot.Tools
 
         public string TwitterApiKey { get; set; }
 
+        public Dictionary<string, object> PluginConfig { get; set; } = new Dictionary<string, object>();
+
+        public T GetPluginValue<T>(string key)
+        {
+            if (!PluginConfig.ContainsKey(key))
+                return default(T);
+            return (T) PluginConfig[key];
+        }
+
+        public void SetPluginValue<T>(string key, T value)
+        {
+            if (PluginConfig.ContainsKey(key))
+                PluginConfig[key] = value;
+            else
+                PluginConfig.Add(key, value);
+        }
+
 
 
         public VtuberInfo GetVtuber(string nameOrNickName)

@@ -68,11 +68,13 @@ namespace VtuberBot
                     ApiAddress = Config.DefaultConfig.CoolQApi,
                     AccessToken = Config.DefaultConfig.CoolQAccessToken
                 };
+                
                 Listener = new ApiPostListener()
                 {
                     ApiClient = Client,
                     PostAddress = Config.DefaultConfig.CoolQListenUrl,
                 };
+                
                 Listener.StartListen();
                 var service = new CoolService();
                 SendService = service;

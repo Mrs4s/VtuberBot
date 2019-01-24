@@ -24,6 +24,7 @@
     <PackageReference Include="Sisters.WudiLib" Version="0.0.4.2" />
     <PackageReference Include="System.Drawing.Common" Version="4.5.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="4.5.0" />
+    <PackageReference Include="WordCloud" Version="1.0.0.3" />
   </ItemGroup>
 
 </Project>

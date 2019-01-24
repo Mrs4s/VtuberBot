@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using MongoDB.Driver;
+using QQ.Framework;
 using QQ.Framework.Domains;
 using QQ.Framework.Utils;
 using VtuberBot.Database;
@@ -50,7 +54,7 @@ namespace VtuberBot.Robots.Commands
                                                      "\r\n!直播 历史 <Vtuber名称>         -查看该Vtuber直播历史" +
                                                      "\r\n!直播 历史 <Vtuber名称> <序号>  -查看该次直播详细信息" +
                                                      "\r\n!直播 评论 <Vtuber名称> <序号>  -查看该次直播评论信息" +
-                                                     "\r\n!直播 评论 <Vtuber名称> <序号> 复读排序 -查看该次直播复读统计");
+                                                     "\r\n!直播 评论 <Vtuber名称> <序号> 复读 -查看该次直播复读统计");
         }
 
         public LiveCommand(ISendMessageService service) : base(service)
@@ -151,20 +155,15 @@ namespace VtuberBot.Robots.Commands
             }
 
             var msg = string.Empty;
-            if (args.Length == 5 && args.Last() == "复读排序")
+            if (args.Length == 5 && args.Last() == "复读")
             {
-                var dicDesc = dic.OrderByDescending(v => v.Value);
-                var num = 0;
-                msg = $"关于 {vtuber.OriginalName} 的评论分析:";
-                foreach (var pair in dicDesc)
-                {
-                    msg += $"\r\n{pair.Key} 被复读 {pair.Value} 次";
-                    if (num++ >= 10)
-                        break;
-                }
-                _service.SendToGroup(message.GroupNumber, msg);
+                var dicDesc = dic.OrderByDescending(v => v.Value).ToDictionary(key => key.Key, value => value.Value);
+                var wordCloud = new WordCloud.WordCloud(1920, 1080);
+                var image = wordCloud.Draw(dicDesc.Keys.Take(30).ToList(), dicDesc.Values.Take(30).ToList());
+                _service.SendImageToGroup(message.GroupNumber, image);
                 return;
             }
+
             var count = comments.Where(v => v.TextMessageDetails?.HasValues ?? false).Count(v =>
                 v.TextMessageDetails["messageText"].ToObject<string>().ChineseRatio() > 80 &&
                 v.DisplayMessage.Length >= 2 && v.DisplayMessage.ToCharArray()

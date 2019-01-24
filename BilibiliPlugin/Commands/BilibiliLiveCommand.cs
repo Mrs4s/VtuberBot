@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using MongoDB.Driver;
 using QQ.Framework;
@@ -35,13 +36,7 @@ namespace BilibiliPlugin.Commands
         }
         public override void ShowHelpMessage(MessageInfo message, string[] args)
         {
-            _service.SendToGroup(message.GroupNumber, new Richtext()
-            {
-                Snippets = new List<TextSnippet>()
-                {
-                    new TextSnippet(@"I:\UserFolder\Pictures\QQ图片20181006210105.jpg", MessageType.Picture)
-                }
-            });
+
         }
     }
 }

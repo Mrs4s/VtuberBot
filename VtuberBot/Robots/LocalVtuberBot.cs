@@ -247,7 +247,7 @@ namespace VtuberBot.Robots
             {
 
                 LogHelper.Info(
-                    $"收到来自群 [{groupNumber}] 的 [{GetGroupCard(groupNumber, fromNumber)}({fromNumber})] 的消息：{content}",
+                    $"收到来自群 [{GetGroupName(groupNumber)}({groupNumber})] 的 [{GetGroupCard(groupNumber, fromNumber)}({fromNumber})] 的消息：{content}",
                     Config.DefaultConfig.LogGroupMessage);
             }
 
