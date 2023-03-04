@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.8.11" />
-    <PackageReference Include="MongoDB.Driver" Version="2.7.2" />
+    <PackageReference Include="MongoDB.Driver" Version="2.19.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="Sisters.WudiLib" Version="0.0.4.2" />
     <PackageReference Include="System.Drawing.Common" Version="4.5.0" />
